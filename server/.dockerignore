@@ -1,0 +1,13 @@
+node_modules/
+.env
+.env.*
+.env sample
+uploads/
+.DS_Store
+*.log
+npm-debug.log*
+Thumbs.db
+.idea/
+.vscode/
+.git/
+.gitignore
