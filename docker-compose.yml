@@ -1,0 +1,88 @@
+services:
+
+  mongodb:
+    image: mongo:6.0
+    container_name: cinema-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE:      ${MONGO_DB_NAME}
+      MONGO_APP_USER:             ${MONGO_APP_USER}
+      MONGO_APP_PASSWORD:         ${MONGO_APP_PASSWORD}
+    volumes:
+      - mongodb-data:/data/db
+      - ./mongo-init.sh:/docker-entrypoint-initdb.d/01-cinema-init.sh:ro
+    networks:
+      - cinema-net
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    image: cinema-backend:latest
+    container_name: cinema-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV:     production
+      PORT:         8080
+      MONGODB_URI:  >-
+        mongodb://${MONGO_APP_USER}:${MONGO_APP_PASSWORD}@mongodb:27017/${MONGO_DB_NAME}?authSource=${MONGO_DB_NAME}
+      GMAIL_USER:     ${GMAIL_USER}
+      GMAIL_PASSWORD: ${GMAIL_PASSWORD}
+    volumes:
+      - cinema-uploads:/app/uploads
+    networks:
+      - cinema-net
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - "CMD"
+        - "node"
+        - "-e"
+        - >-
+          const h = require('http');
+          h.get('http://localhost:8080/movies', (r) => {
+            process.exit(r.statusCode >= 500 ? 1 : 0);
+          }).on('error', () => process.exit(1));
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_GOOGLE_CLIENT_ID: ${REACT_APP_GOOGLE_CLIENT_ID}
+        REACT_APP_FACEBOOK_APP_ID:  ${REACT_APP_FACEBOOK_APP_ID}
+    image: cinema-frontend:latest
+    container_name: cinema-frontend
+    restart: unless-stopped
+    ports:
+      - "${HOST_PORT:-80}:80"
+    networks:
+      - cinema-net
+    depends_on:
+      backend:
+        condition: service_healthy
+
+networks:
+  cinema-net:
+    driver: bridge
+    name: cinema-network
+
+volumes:
+  mongodb-data:
+    name: cinema-mongodb-data
+  cinema-uploads:
+    name: cinema-uploads-data
