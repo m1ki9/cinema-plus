@@ -1,0 +1,76 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cinema-ingress
+  namespace: cinema-app
+  labels:
+    app.kubernetes.io/name: cinema-plus
+    app.kubernetes.io/component: ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "20m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "90"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "10"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: cinema.example.com
+      http:
+        paths:
+          - path: /users(/|$)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: cinema-backend-svc
+                port:
+                  number: 8080
+          - path: /movies(/|$)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: cinema-backend-svc
+                port:
+                  number: 8080
+          - path: /cinemas(/|$)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: cinema-backend-svc
+                port:
+                  number: 8080
+          - path: /showtimes(/|$)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: cinema-backend-svc
+                port:
+                  number: 8080
+          - path: /reservations(/|$)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: cinema-backend-svc
+                port:
+                  number: 8080
+          - path: /invitations(/|$)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: cinema-backend-svc
+                port:
+                  number: 8080
+          - path: /uploads(/|$)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: cinema-backend-svc
+                port:
+                  number: 8080
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: cinema-frontend-svc
+                port:
+                  number: 80

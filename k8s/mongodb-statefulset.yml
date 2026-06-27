@@ -1,0 +1,247 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cinema-mongodb-config
+  namespace: cinema-app
+  labels:
+    app.kubernetes.io/name: cinema-plus
+    app.kubernetes.io/component: mongodb
+data:
+  MONGO_DB_NAME: cinemadb
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cinema-mongodb-secret
+  namespace: cinema-app
+  labels:
+    app.kubernetes.io/name: cinema-plus
+    app.kubernetes.io/component: mongodb
+type: Opaque
+stringData:
+  MONGO_ROOT_USER: cinemaroot
+  MONGO_ROOT_PASSWORD: CHANGE_ME_root_password
+  MONGO_APP_USER: cinemaapp
+  MONGO_APP_PASSWORD: CHANGE_ME_app_password
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cinema-mongodb-init
+  namespace: cinema-app
+  labels:
+    app.kubernetes.io/name: cinema-plus
+    app.kubernetes.io/component: mongodb
+data:
+  01-cinema-init.sh: |
+    #!/bin/bash
+    set -e
+    ADMIN_HASH='$2a$08$OuTUD.Xlj/eNSd0hT5XelOViMj02bj6vY35WmDZ8cD7QVO9FurLW.'
+    USER_HASH='$2b$08$6p9DeqeGPXgm.9MQDvyx0OsWtRwzGrYJ3NjeWkE.UiNP4vFSjwFKi'
+    USER1_HASH='$2b$08$P/pQeaxTxBruVDytezPR4eZsDyyRcRNHWH.gpJ3e7G9pEy4khXne6'
+    USER2_HASH='$2b$08$zRqxamJfgH8wZw.ZfRmTt.qyQHkMbLYu8mNfJfJ2w/oAJyFBH5dSS'
+    mongosh \
+      --username "$MONGO_INITDB_ROOT_USERNAME" \
+      --password "$MONGO_INITDB_ROOT_PASSWORD" \
+      --authenticationDatabase admin \
+      --eval "
+        const db = db.getSiblingDB('${MONGO_DB_NAME}');
+        db.createUser({
+          user: '${MONGO_APP_USER}',
+          pwd:  '${MONGO_APP_PASSWORD}',
+          roles: [
+            { role: 'readWrite', db: '${MONGO_DB_NAME}' },
+            { role: 'dbAdmin',   db: '${MONGO_DB_NAME}' }
+          ]
+        });
+
+        db.users.insertMany([
+          { name: 'Admin', username: 'admin', email: 'admin@cinema.local', password: '${ADMIN_HASH}', role: 'superadmin', phone: '+12025550001', tokens: [] },
+          { name: 'Regular User', username: 'user', email: 'user@cinema.local', password: '${USER_HASH}', role: 'guest', phone: '+12025550002', tokens: [] },
+          { name: 'User One', username: 'user1', email: 'user1@cinema.local', password: '${USER1_HASH}', role: 'guest', phone: '+12025550003', tokens: [] },
+          { name: 'User Two', username: 'user2', email: 'user2@cinema.local', password: '${USER2_HASH}', role: 'guest', phone: '+12025550004', tokens: [] }
+        ]);
+
+        const m1 = ObjectId(), m2 = ObjectId(), m3 = ObjectId();
+        const c1 = ObjectId(), c2 = ObjectId(), c3 = ObjectId();
+        const r1 = ObjectId(), r2 = ObjectId(), r3 = ObjectId(), r4 = ObjectId(), r5 = ObjectId();
+
+        db.movies.insertMany([
+          { _id: m1, title: 'dune: part two', image: 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg', status: 'nowShowing', language: 'english', genre: 'sci-fi', director: 'denis villeneuve', cast: 'timothee chalamet, zendaya, rebecca ferguson', description: 'paul atreides unites with chani and the fremen to seek revenge.', duration: 166, releaseDate: new Date('2024-02-29'), endDate: new Date('2027-12-31'), ticketPrice: 350 },
+          { _id: m2, title: 'oppenheimer', image: 'https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg', status: 'nowShowing', language: 'english', genre: 'drama', director: 'christopher nolan', cast: 'cillian murphy, emily blunt, matt damon', description: 'the story of j. robert oppenheimer and the atomic bomb.', duration: 180, releaseDate: new Date('2023-07-21'), endDate: new Date('2027-12-31'), ticketPrice: 400 },
+          { _id: m3, title: 'barbie', image: 'https://image.tmdb.org/t/p/w500/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg', status: 'nowShowing', language: 'english', genre: 'comedy', director: 'greta gerwig', cast: 'margot robbie, ryan gosling, america ferrera', description: 'barbie and ken travel to the real world.', duration: 114, releaseDate: new Date('2023-07-21'), endDate: new Date('2027-12-31'), ticketPrice: 300 },
+          { title: 'the batman', image: 'https://image.tmdb.org/t/p/w500/74xTEgt7R36Fpooo50r9T25onhq.jpg', status: 'nowShowing', language: 'english', genre: 'action', director: 'matt reeves', cast: 'robert pattinson, zoe kravitz, paul dano', description: 'batman must unmask a sadistic killer leaving cryptic clues.', duration: 176, releaseDate: new Date('2022-03-04'), endDate: new Date('2027-12-31'), ticketPrice: 350 },
+          { title: 'joker', image: 'https://image.tmdb.org/t/p/w500/n6bUvigpRFqSwmPp1m2YADdbRBc.jpg', status: 'nowShowing', language: 'english', genre: 'drama', director: 'todd phillips', cast: 'joaquin phoenix, robert de niro, zazie beetz', description: 'a troubled comedian descends into becoming an iconic villain.', duration: 122, releaseDate: new Date('2019-10-04'), endDate: new Date('2027-12-31'), ticketPrice: 320 },
+          { title: 'interstellar', image: 'https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg', status: 'nowShowing', language: 'english', genre: 'sci-fi', director: 'christopher nolan', cast: 'matthew mcconaughey, anne hathaway, jessica chastain', description: 'explorers travel through a wormhole to ensure humanity survival.', duration: 169, releaseDate: new Date('2014-11-07'), endDate: new Date('2027-12-31'), ticketPrice: 330 },
+          { title: 'deadpool & wolverine', image: 'https://image.tmdb.org/t/p/w500/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg', status: 'comingSoon', language: 'english', genre: 'action', director: 'shawn levy', cast: 'ryan reynolds, hugh jackman, emma corrin', description: 'wade wilson teams up with a reluctant wolverine.', duration: 128, releaseDate: new Date('2027-09-01'), endDate: new Date('2028-12-31'), ticketPrice: 400 },
+          { title: 'gladiator ii', image: 'https://image.tmdb.org/t/p/w500/2cxhvwyEwRlysAmRH4iodkvo0z5.jpg', status: 'comingSoon', language: 'english', genre: 'action', director: 'ridley scott', cast: 'paul mescal, pedro pascal, denzel washington', description: 'lucius is forced to enter the colosseum years after maximus.', duration: 148, releaseDate: new Date('2027-10-15'), endDate: new Date('2028-12-31'), ticketPrice: 400 },
+          { title: 'wicked', image: 'https://image.tmdb.org/t/p/w500/c5Tqxeo1UpBvnAc3csUm7j3hlQl.jpg', status: 'comingSoon', language: 'english', genre: 'musical', director: 'jon m. chu', cast: 'cynthia erivo, ariana grande, jeff goldblum', description: 'the untold story of the witches of oz.', duration: 160, releaseDate: new Date('2027-11-20'), endDate: new Date('2028-12-31'), ticketPrice: 380 }
+        ]);
+
+        db.cinemas.insertMany([
+          { _id: c1, name: 'CinePlex Central', city: 'skopje', image: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800' },
+          { _id: c2, name: 'Millennium Cinema', city: 'bitola', image: 'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=800' },
+          { _id: c3, name: 'Cinestar Lakeside', city: 'ohrid', image: 'https://images.unsplash.com/photo-1574267432553-4b4628081c31?w=800' }
+        ]);
+
+        db.rooms.insertMany([
+          { _id: r1, name: 'Room 1', cinemaId: c1, seatsAvailable: 28, seats: [[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0]] },
+          { _id: r2, name: 'Room 2', cinemaId: c1, seatsAvailable: 18, seats: [[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]] },
+          { _id: r3, name: 'Room 1', cinemaId: c2, seatsAvailable: 30, seats: [[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]] },
+          { _id: r4, name: 'Room 1', cinemaId: c3, seatsAvailable: 24, seats: [[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]] },
+          { _id: r5, name: 'Room 2', cinemaId: c3, seatsAvailable: 16, seats: [[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]] }
+        ]);
+
+        const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1); tomorrow.setHours(0,0,0,0);
+        const farFuture = new Date(); farFuture.setDate(farFuture.getDate()+90);
+
+        db.showtimes.insertMany([
+          { startAt: '14:00', startDate: tomorrow, endDate: farFuture, movieId: m1, cinemaId: c1, roomId: r1 },
+          { startAt: '18:00', startDate: tomorrow, endDate: farFuture, movieId: m1, cinemaId: c1, roomId: r2 },
+          { startAt: '21:00', startDate: tomorrow, endDate: farFuture, movieId: m1, cinemaId: c2, roomId: r3 },
+          { startAt: '16:00', startDate: tomorrow, endDate: farFuture, movieId: m2, cinemaId: c1, roomId: r1 },
+          { startAt: '20:00', startDate: tomorrow, endDate: farFuture, movieId: m2, cinemaId: c2, roomId: r3 },
+          { startAt: '19:00', startDate: tomorrow, endDate: farFuture, movieId: m2, cinemaId: c3, roomId: r4 },
+          { startAt: '15:00', startDate: tomorrow, endDate: farFuture, movieId: m3, cinemaId: c2, roomId: r3 },
+          { startAt: '17:00', startDate: tomorrow, endDate: farFuture, movieId: m3, cinemaId: c3, roomId: r5 },
+          { startAt: '20:00', startDate: tomorrow, endDate: farFuture, movieId: m3, cinemaId: c1, roomId: r1 }
+        ]);
+
+        const resDate = new Date(); resDate.setDate(resDate.getDate()+5); resDate.setHours(0,0,0,0);
+
+        db.reservations.insertMany([
+          { date: resDate, startAt: '18:00', seats: [[0,2],[0,3]], ticketPrice: 350, total: 700, movieId: m1, cinemaId: c1, roomId: r2, username: 'user', phone: '+12025550002', checkin: false },
+          { date: resDate, startAt: '20:00', seats: [[1,0],[1,1],[1,2]], ticketPrice: 400, total: 1200, movieId: m2, cinemaId: c2, roomId: r3, username: 'user1', phone: '+12025550003', checkin: false },
+          { date: resDate, startAt: '17:00', seats: [[0,4],[0,5]], ticketPrice: 300, total: 600, movieId: m3, cinemaId: c3, roomId: r5, username: 'user2', phone: '+12025550004', checkin: false }
+        ]);
+
+        db.createCollection('invitations');
+      "
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cinema-mongodb
+  namespace: cinema-app
+  labels:
+    app.kubernetes.io/name: cinema-plus
+    app.kubernetes.io/component: mongodb
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/component: mongodb
+  ports:
+    - name: mongo
+      port: 27017
+      targetPort: 27017
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: cinema-mongodb
+  namespace: cinema-app
+  labels:
+    app.kubernetes.io/name: cinema-plus
+    app.kubernetes.io/component: mongodb
+spec:
+  serviceName: cinema-mongodb
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: mongodb
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: cinema-plus
+        app.kubernetes.io/component: mongodb
+    spec:
+      securityContext:
+        fsGroup: 999
+      containers:
+        - name: mongodb
+          image: mongo:6.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 27017
+              name: mongo
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: cinema-mongodb-secret
+                  key: MONGO_ROOT_USER
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: cinema-mongodb-secret
+                  key: MONGO_ROOT_PASSWORD
+            - name: MONGO_INITDB_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: cinema-mongodb-config
+                  key: MONGO_DB_NAME
+            - name: MONGO_DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: cinema-mongodb-config
+                  key: MONGO_DB_NAME
+            - name: MONGO_APP_USER
+              valueFrom:
+                secretKeyRef:
+                  name: cinema-mongodb-secret
+                  key: MONGO_APP_USER
+            - name: MONGO_APP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: cinema-mongodb-secret
+                  key: MONGO_APP_PASSWORD
+          volumeMounts:
+            - name: mongodb-data
+              mountPath: /data/db
+            - name: init-scripts
+              mountPath: /docker-entrypoint-initdb.d
+              readOnly: true
+          resources:
+            requests:
+              memory: 512Mi
+              cpu: 250m
+            limits:
+              memory: 1Gi
+              cpu: 500m
+          livenessProbe:
+            exec:
+              command:
+                - mongosh
+                - --quiet
+                - --eval
+                - "db.adminCommand('ping').ok"
+            initialDelaySeconds: 40
+            periodSeconds: 20
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - mongosh
+                - --quiet
+                - --eval
+                - "db.adminCommand('ping').ok"
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+      volumes:
+        - name: init-scripts
+          configMap:
+            name: cinema-mongodb-init
+            defaultMode: 0755
+  volumeClaimTemplates:
+    - metadata:
+        name: mongodb-data
+        labels:
+          app.kubernetes.io/component: mongodb
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: 2Gi
