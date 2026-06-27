@@ -1,0 +1,30 @@
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cinema-plus
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: cinema-plus
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  source:
+   
+    repoURL: https://github.com/m1ki9/cinema-plus.git
+    targetRevision: master
+    path: k8s
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cinema-app
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true
