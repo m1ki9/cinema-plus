@@ -1,168 +1,177 @@
-<h1 align="center">
-Cinema +
-</h1>
+<h1 align="center">Cinema +</h1>
+<p align="center">MongoDB, Expressjs, React/Redux, Nodejs</p>
 <p align="center">
-MongoDB, Expressjs, React/Redux, Nodejs
+  <a href="https://hub.docker.com/r/m1ki9/cinema-backend"><img src="https://img.shields.io/badge/DockerHub-backend-blue?logo=docker" /></a>
+  <a href="https://hub.docker.com/r/m1ki9/cinema-frontend"><img src="https://img.shields.io/badge/DockerHub-frontend-blue?logo=docker" /></a>
+  <a href="https://github.com/m1ki9/cinema-plus/actions"><img src="https://img.shields.io/github/actions/workflow/status/m1ki9/cinema-plus/ci.yml?label=CI/CD&logo=github" /></a>
 </p>
 
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/facebook/react/blob/master/LICENSE) [![npm version](https://img.shields.io/npm/v/react.svg?style=flat)](https://www.npmjs.com/package/react) 
+> Forked from [georgesimos/cinema-plus](https://github.com/georgesimos/cinema-plus) — dockerized, orchestrated with Docker Compose, with a CI/CD pipeline and Kubernetes manifests.
 
-Cinema + is an online Movie Ticket Booking web app with MERN Stack.
+Cinema + is an online movie ticket booking system built with the MERN stack.
 
-  - Online Booking System
-  - Admin Dashboard
-  - Dark Theme UI
+- Online Booking System
+- Admin Dashboard
+- Dark Theme UI
 
+---
 
-> MERN is a fullstack implementation in MongoDB, Expressjs, React/Redux, Nodejs.
+## Quick Start (Docker Compose)
 
-MERN stack is the idea of using Javascript/Node for fullstack web development.
+```bash
+# 1. Clone the repository
+git clone https://github.com/m1ki9/cinema-plus.git
+cd cinema-plus
 
-<img src="https://github.com/georgesimos/readme-assets/blob/master/cinema-plus/mern.png" />
+# 2. Copy the env template
+cp .env.example .env
 
-# Features!
+# 3. Start all services
+docker compose up -d
 
-  - Add / Update / Delete Movies
-  - Add / Update / Delete Cinemas
-  - Add / Update / Delete Showtimes
-  - Add / Update / Delete Reservations
-  - Add / Update / Delete Users
-  - Generate QR Code for reservation check in
-  - Send HTML emails invitations 
-
-
-You can also:
-  - Export QR Code pass as PDF
-
-### Tech
-Cinema + uses a number of open source projects to work properly:
-* [MongoDB](https://www.mongodb.com/) - A document-oriented, No-SQL database used to store the application data.
-* [ExpressJS](https://expressjs.com/) - fast node.js network app framework.
-* [ReactJS](https://reactjs.org/) - A JavaScript library for building user interfaces.
-* [Redux](https://redux.js.org/) - A predictable state container for JavaScript apps.
-* [nodeJS](https://nodejs.org/) - A JavaScript runtime built on Chrome's V8 JavaScript engine
-
-### Installation
-
-Cinema + requires [Node.js](https://nodejs.org/)  to run.
-
-Set environment variables 
-
-```sh
-$ Create a .env file in your server and client folder
-$ See the .env sample
-create a mongodb database and add your connection string into .env file
+# 4. Open in browser
+# http://localhost
 ```
 
-Install the dependencies and devDependencies
+### Demo Accounts
 
-```sh
-$ git clone https://github.com/georgesimos/Movie-app.git
-$ npm install
-$ cd server npm install && npm start
-$ cd client npm install && npm start
-```
-Start the server.
+| Username | Password | Role |
+|----------|----------|------|
+| admin | admin | superadmin |
+| user | user1234 | guest |
+| user1 | user1234 | guest |
+| user2 | user1234 | guest |
 
-```sh
-$ cd server 
-$ npm install 
-```
+### Useful Commands
 
-Start the client.
-
-```sh
-$ cd client 
-$ npm install 
-$ npm start
+```bash
+docker compose ps          # Service status
+docker compose logs -f     # Live logs
+docker compose down -v     # Stop and remove volumes
 ```
 
-Start from root path
-```sh
-$ npm run server
-$ npm run client
+---
+
+## Architecture
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   Frontend  │────▶│   Backend   │────▶│   MongoDB   │
+│  Nginx:80   │     │ Express:8080│     │    :27017   │
+│  React SPA  │     │   REST API  │     │  StatefulSet│
+└─────────────┘     └─────────────┘     └─────────────┘
 ```
 
-### Plugins
+| Service | Image | Port |
+|---------|-------|------|
+| MongoDB | mongo:6.0 | 27017 |
+| Backend | cinema-backend (Node 18 Alpine) | 8080 |
+| Frontend | cinema-frontend (Nginx 1.25 Alpine) | 80 |
 
-Cinema + is currently extended with the following plugins. Instructions on how to use them in your own application are linked below.
+---
 
-### Server
+## CI/CD Pipeline (GitHub Actions)
 
+On every push to `master`:
 
-| Plugin | README |
-| ------ | ------ |
-| concurrently | [plugins/concurrently/README.md](https://github.com/kimmobrunfeldt/concurrently/blob/master/README.md) |
-| bcryptjs | [plugins/bcryptjs/README.md](https://github.com/dcodeIO/bcrypt.js/blob/master/README.md) |
-| express | [plugins/express/README.md](https://github.com/expressjs/express/blob/master/Readme.md) |
-| googleapis | [plugins/googleapis/README.md](https://github.com/googleapis/googleapis/blob/master/README.md) |
-| jsonwebtoken | [plugins/jsonwebtoken/README.md](https://github.com/auth0/node-jsonwebtoken/blob/master/README.md) |
-| mongoose | [plugins/mongoose/README.md](https://github.com/Automattic/mongoose/blob/master/README.md) |
-| multer | [plugins/multer/README.md](https://github.com/expressjs/multer/blob/master/README.md)|
-| nodemailer | [plugins/nodemailer/README.md](https://github.com/nodemailer/nodemailer/blob/master/README.md) |
-| nodemon | [plugins/nodemon/README.md](https://github.com/remy/nodemon/blob/master/README.md) |
-| qrcode | [plugins/qrcode/README.md](https://github.com/soldair/node-qrcode/blob/master/README.md) |
+1. **Build** — Docker images for backend and frontend
+2. **Push** — Images to DockerHub tagged with `latest` and `sha-<commit>`
+3. **CD** — Automatically update K8s manifests with the new image tag
 
-### Client
+```
+Push code → GitHub Actions → DockerHub → K8s manifests update → ArgoCD deploy
+```
 
-| Plugin | README |
-| ------ | ------ |
-| fullcalendar | [plugins/fullcalendar/README.md](https://github.com/fullcalendar/fullcalendar/blob/master/README.md) |
-| material-ui | [plugins/material-ui/README.md](https://github.com/mui-org/material-ui/blob/master/README.md) |
-| moment | [plugins/moment/README.md](https://www.npmjs.com/package/@date-io/moment?activeTab=readme) |
-| jspdf | [plugins/jspdf/README.md](https://github.com/MrRio/jsPDF) |
-| react | [plugins/react/README.md](https://github.com/facebook/react/blob/master/README.md) |
-| react-facebook-login | [plugins/react-facebook-login /README.md](https://github.com/keppelen/react-facebook-login/blob/master/README.md) |
-| react-google-login | [plugins/react-google-login/README.md](https://www.npmjs.com/package/react-google-login) |
-| react-redux | [plugins/react-redux/README.md](https://github.com/reduxjs/react-redux) |
-| react-router-dom | [plugins/react-router/README.md](https://github.com/ReactTraining/react-router/blob/master/README.md) |
-| react-slick | [plugins/react-slick/README.md](https://github.com/akiran/react-slick) |
-| redux | [plugins/redux/README.md](https://github.com/reduxjs/redux)|
+- [CI/CD Workflow](.github/workflows/ci.yml)
+- [Pipeline Runs](https://github.com/m1ki9/cinema-plus/actions)
 
-### Todos
+---
 
- - Add Light Mode / More themes
+## Kubernetes Deployment
 
+```bash
+# Create namespace and apply all manifests
+kubectl apply -f k8s/
 
+# Verify
+kubectl get all -n cinema-app
+```
 
-# Screenshots! 
+### Manifests (`k8s/`)
 
-Movie Page
-<img src="https://github.com/georgesimos/readme-assets/blob/master/cinema-plus/movie.png" />
+| File | Resource |
+|------|----------|
+| `namespace.yml` | Namespace `cinema-app` |
+| `backend-deployment.yml` | Deployment (2 replicas) + ConfigMap + Secret + PVC |
+| `backend-service.yml` | ClusterIP Service :8080 |
+| `frontend-deployment.yml` | Deployment (2 replicas) + ConfigMap |
+| `frontend-service.yml` | ClusterIP Service :80 |
+| `ingress.yml` | Nginx Ingress — routes API and frontend traffic |
+| `mongodb-statefulset.yml` | StatefulSet + Headless Service + PVC + ConfigMap + Secret |
+
+---
+
+## ArgoCD (GitOps CD)
+
+ArgoCD watches the `k8s/` folder and automatically deploys changes to the cluster.
+
+```bash
+# Install ArgoCD
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+# Register the application
+kubectl apply -f argocd/application.yml
+
+# Open dashboard
+kubectl port-forward svc/argocd-server -n argocd 8888:443
+# https://localhost:8888
+```
+
+---
+
+## Project Structure
+
+```
+cinema-plus/
+├── client/                     # React frontend
+│   ├── Dockerfile
+│   ├── nginx.conf
+│   └── .dockerignore
+├── server/                     # Express backend
+│   ├── Dockerfile
+│   └── .dockerignore
+├── k8s/                        # Kubernetes manifests
+├── argocd/                     # ArgoCD application
+├── .github/workflows/ci.yml   # CI/CD pipeline
+├── docker-compose.yml          # Docker Compose orchestration
+├── mongo-init.sh               # Database seed script
+└── .env.example                # Environment variable template
+```
+
+---
+
+## Links
+
+| Resource | Link |
+|----------|------|
+| DockerHub Backend | [m1ki9/cinema-backend](https://hub.docker.com/r/m1ki9/cinema-backend) |
+| DockerHub Frontend | [m1ki9/cinema-frontend](https://hub.docker.com/r/m1ki9/cinema-frontend) |
+| CI/CD Pipeline | [GitHub Actions](https://github.com/m1ki9/cinema-plus/actions) |
+| Original Project | [georgesimos/cinema-plus](https://github.com/georgesimos/cinema-plus) |
+
+---
+
+## Screenshots
 
 <details>
-  <summary>More Screenshots</summary>
-  Booking Page
+  <summary>Show screenshots</summary>
+  <img src="https://github.com/georgesimos/readme-assets/blob/master/cinema-plus/movie.png" />
   <img src="https://github.com/georgesimos/readme-assets/blob/master/cinema-plus/booking.png" />
-
-  Booking Invitations
-  <img src="https://github.com/georgesimos/readme-assets/blob/master/cinema-plus/invitation.png" />
-
-  Guest Dashboard Page
-  <img src="https://github.com/georgesimos/readme-assets/blob/master/cinema-plus/guest-dashboard.png" />
-
-  My Account Page
-  <img src="https://github.com/georgesimos/readme-assets/blob/master/cinema-plus/my-account.png" />
-
-  Admin Home Page
   <img src="https://github.com/georgesimos/readme-assets/blob/master/cinema-plus/admin-dashboard.png" />
-
-  Admin Cinema Page
-  <img src="https://github.com/georgesimos/readme-assets/blob/master/cinema-plus/admin-cinemas.png" />
-
-  Admin Movie Page
   <img src="https://github.com/georgesimos/readme-assets/blob/master/cinema-plus/admin-movies.png" />
-
-  Admin Reservation Page
-  <img src="https://github.com/georgesimos/readme-assets/blob/master/cinema-plus/reservations.png" />
-
-  Admin Reservation Calendar
-  <img src="https://github.com/georgesimos/readme-assets/blob/master/cinema-plus/calendar.png" />
 </details>
 
+---
 
-
-License
-----
-
-MIT
+License: MIT
