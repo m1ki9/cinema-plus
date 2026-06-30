@@ -82,9 +82,10 @@ export default theme => ({
     height: '100%',
     right: 0,
     backgroundSize: 'cover !important',
+    backgroundRepeat: 'no-repeat !important',
     borderRadius: 11,
     width: '80%',
-    backgroundPosition: '-100% 10% !important'
+    backgroundPosition: 'center !important'
   },
 
   [theme.breakpoints.down('sm')]: {

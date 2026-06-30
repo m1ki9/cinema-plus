@@ -15,14 +15,19 @@ const getMovies = (state, payload) => {
     .sort((a, b) => Date.parse(b.releaseDate) - Date.parse(a.releaseDate))
     .slice(0, 5);
 
-  const nowShowing = payload.filter(
-    movie =>
-      new Date(movie.endDate) >= new Date() &&
-      new Date(movie.releaseDate) < new Date()
+  // Use the explicit `status` field when present; otherwise fall back to
+  // the date-based logic so older movies without a status still work.
+  const nowShowing = payload.filter(movie =>
+    movie.status
+      ? movie.status === 'nowShowing'
+      : new Date(movie.endDate) >= new Date() &&
+        new Date(movie.releaseDate) < new Date()
   );
 
-  const comingSoon = payload.filter(
-    movie => new Date(movie.releaseDate) > new Date()
+  const comingSoon = payload.filter(movie =>
+    movie.status
+      ? movie.status === 'comingSoon'
+      : new Date(movie.releaseDate) > new Date()
   );
 
   return {

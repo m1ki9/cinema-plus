@@ -13,9 +13,7 @@ const MovieCard = props => {
       <div className={classes.card}>
         <header
           className={classes.header}
-          style={{
-            backgroundImage: `url(${movie.image})`
-          }}>
+          style={movie.image ? { backgroundImage: `url(${movie.image})` } : { background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
           <Typography className={classes.h4} variant="h4" color="inherit">
             {movie.genre}
           </Typography>

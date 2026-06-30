@@ -24,10 +24,7 @@ const styles = theme => ({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundImage: 'url(https://source.unsplash.com/featured/?cinema)',
-    backgroundSize: 'cover',
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'center',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     opacity: 0.5
   },
   content: {

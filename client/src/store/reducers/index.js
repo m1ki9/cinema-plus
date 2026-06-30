@@ -4,6 +4,7 @@ import auth from './auth';
 import users from './users';
 import movies from './movies';
 import cinemas from './cinemas';
+import rooms from './rooms';
 import reservations from './reservations';
 import showtimes from './showtimes';
 import checkout from './checkout';
@@ -14,6 +15,7 @@ export default combineReducers({
   userState: users,
   movieState: movies,
   cinemaState: cinemas,
+  roomState: rooms,
   reservationState: reservations,
   showtimeState: showtimes,
   checkoutState: checkout

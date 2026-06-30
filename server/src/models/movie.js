@@ -11,6 +11,11 @@ const movieSchema = new Schema({
   image: {
     type: String,
   },
+  status: {
+    type: String,
+    enum: ['nowShowing', 'comingSoon'],
+    default: 'nowShowing',
+  },
   language: {
     type: String,
     required: true,
@@ -51,6 +56,10 @@ const movieSchema = new Schema({
   },
   endDate: {
     type: Date,
+    required: true,
+  },
+  ticketPrice: {
+    type: Number,
     required: true,
   },
 });

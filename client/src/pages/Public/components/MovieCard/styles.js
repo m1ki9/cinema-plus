@@ -10,6 +10,8 @@ export default theme => ({
   header: {
     backgroundColor: '#7fc7d9', // Average color of the background image.
     backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
     height: '200px',
     padding: '5px 10px',
     width: '100%',

@@ -25,6 +25,11 @@ const showtimeSchema = new Schema({
     ref: 'Cinema',
     required: true,
   },
+  roomId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Room',
+    required: true,
+  },
 });
 
 const Showtime = mongoose.model('Showtime', showtimeSchema);

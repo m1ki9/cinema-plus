@@ -16,12 +16,12 @@ import {
   updateMovie,
   removeMovie
 } from '../../../../../store/actions';
-import FileUpload from '../../../../../components/FileUpload/FileUpload';
 
 class AddMovie extends Component {
   state = {
     title: '',
-    image: null,
+    image: '',
+    status: 'nowShowing',
     genre: [],
     language: '',
     duration: '',
@@ -29,13 +29,16 @@ class AddMovie extends Component {
     director: '',
     cast: '',
     releaseDate: new Date(),
-    endDate: new Date()
+    endDate: new Date(),
+    ticketPrice: ''
   };
 
   componentDidMount() {
     if (this.props.edit) {
       const {
         title,
+        image,
+        status,
         language,
         genre,
         director,
@@ -43,10 +46,13 @@ class AddMovie extends Component {
         description,
         duration,
         releaseDate,
-        endDate
+        endDate,
+        ticketPrice
       } = this.props.edit;
       this.setState({
         title,
+        image: image || '',
+        status: status || 'nowShowing',
         language,
         genre: genre.split(','),
         director,
@@ -54,7 +60,8 @@ class AddMovie extends Component {
         description,
         duration,
         releaseDate,
-        endDate
+        endDate,
+        ticketPrice: ticketPrice || ''
       });
     }
   }
@@ -79,15 +86,15 @@ class AddMovie extends Component {
   };
 
   onAddMovie = () => {
-    const { image, genre, ...rest } = this.state;
+    const { genre, ...rest } = this.state;
     const movie = { ...rest, genre: genre.join(',') };
-    this.props.addMovie(image, movie);
+    this.props.addMovie(null, movie);
   };
 
   onUpdateMovie = () => {
-    const { image, genre, ...rest } = this.state;
+    const { genre, ...rest } = this.state;
     const movie = { ...rest, genre: genre.join(',') };
-    this.props.updateMovie(this.props.edit._id, movie, image);
+    this.props.updateMovie(this.props.edit._id, movie, null);
   };
 
   onRemoveMovie = () => this.props.removeMovie(this.props.edit._id);
@@ -97,6 +104,7 @@ class AddMovie extends Component {
     const {
       title,
       image,
+      status,
       genre,
       language,
       duration,
@@ -104,7 +112,8 @@ class AddMovie extends Component {
       director,
       cast,
       releaseDate,
-      endDate
+      endDate,
+      ticketPrice
     } = this.state;
 
     const rootClassName = classNames(classes.root, className);
@@ -199,6 +208,17 @@ class AddMovie extends Component {
                 this.handleFieldChange('duration', event.target.value)
               }
             />
+            <TextField
+              className={classes.textField}
+              label="Ticket Price"
+              margin="dense"
+              type="number"
+              value={ticketPrice}
+              variant="outlined"
+              onChange={event =>
+                this.handleFieldChange('ticketPrice', event.target.value)
+              }
+            />
           </div>
           <div className={classes.field}>
             <TextField
@@ -256,13 +276,34 @@ class AddMovie extends Component {
             </MuiPickersUtilsProvider>
           </div>
           <div className={classes.field}>
-            <FileUpload
-              className={classes.upload}
-              file={image}
-              onUpload={event => {
-                const file = event.target.files[0];
-                this.handleFieldChange('image', file);
-              }}
+            <TextField
+              select
+              className={classes.textField}
+              helperText="Where this movie appears"
+              label="Status"
+              margin="dense"
+              required
+              value={status}
+              variant="outlined"
+              onChange={event =>
+                this.handleFieldChange('status', event.target.value)
+              }>
+              <MenuItem value="nowShowing">Now Showing</MenuItem>
+              <MenuItem value="comingSoon">Coming Soon</MenuItem>
+            </TextField>
+          </div>
+          <div className={classes.field}>
+            <TextField
+              fullWidth
+              className={classes.textField}
+              helperText="Paste a direct image URL (e.g. https://.../poster.jpg)"
+              label="Image URL"
+              margin="dense"
+              value={image}
+              variant="outlined"
+              onChange={event =>
+                this.handleFieldChange('image', event.target.value)
+              }
             />
           </div>
         </form>

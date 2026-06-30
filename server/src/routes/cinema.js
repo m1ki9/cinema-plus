@@ -18,7 +18,9 @@ router.post('/cinemas', auth.enhance, async (req, res) => {
 });
 
 router.post('/cinemas/photo/:id', upload('cinemas').single('file'), async (req, res, next) => {
-  const url = `${req.protocol}://${req.get('host')}`;
+  const proto = req.headers['x-forwarded-proto'] || req.protocol;
+  const host = req.headers['x-forwarded-host'] || req.get('host');
+  const url = `${proto}://${host}`;
   const { file } = req;
   const movieId = req.params.id;
   try {
@@ -34,7 +36,7 @@ router.post('/cinemas/photo/:id', upload('cinemas').single('file'), async (req, 
     res.send({ cinema, file });
   } catch (e) {
     console.log(e);
-    res.sendStatus(400).send(e);
+    res.status(400).send(e);
   }
 });
 
@@ -64,7 +66,7 @@ router.get('/cinemas/:id', async (req, res) => {
 router.patch('/cinemas/:id', auth.enhance, async (req, res) => {
   const _id = req.params.id;
   const updates = Object.keys(req.body);
-  const allowedUpdates = ['name', 'ticketPrice', 'city', 'seats', 'seatsAvailable'];
+  const allowedUpdates = ['name', 'city', 'image'];
   const isValidOperation = updates.every((update) => allowedUpdates.includes(update));
 
   if (!isValidOperation) return res.status(400).send({ error: 'Invalid updates!' });

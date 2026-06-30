@@ -14,6 +14,7 @@ import DashboardIcon from '@material-ui/icons/DashboardOutlined';
 import PeopleIcon from '@material-ui/icons/PeopleOutlined';
 import InfoIcon from '@material-ui/icons/InfoOutlined';
 import AccountBoxIcon from '@material-ui/icons/AccountBoxOutlined';
+import { MeetingRoom as MeetingRoomIcon } from '@material-ui/icons';
 // Component styles
 import styles from './styles';
 
@@ -60,6 +61,19 @@ class Sidebar extends Component {
             <ListItemText
               classes={{ primary: classes.listItemText }}
               primary="Cinemas"
+            />
+          </ListItem>
+          <ListItem
+            activeClassName={classes.activeListItem}
+            className={classes.listItem}
+            component={NavLink}
+            to="/admin/rooms">
+            <ListItemIcon className={classes.listItemIcon}>
+              <MeetingRoomIcon />
+            </ListItemIcon>
+            <ListItemText
+              classes={{ primary: classes.listItemText }}
+              primary="Rooms"
             />
           </ListItem>
           <ListItem

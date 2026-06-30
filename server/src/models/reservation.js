@@ -33,6 +33,10 @@ const reservationSchema = new Schema({
     ref: 'Cinema',
     required: true,
   },
+  roomId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Room',
+  },
   username: {
     type: String,
     required: true,

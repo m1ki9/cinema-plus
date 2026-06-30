@@ -63,8 +63,12 @@ function MovieCard(props) {
   const rootClassName = classNames(classes.root, className);
   return (
     <Paper className={rootClassName}>
-      <div className={classes.imageWrapper}>
-        <img alt="movie" className={classes.image} src={movie.image} />
+      <div className={classes.imageWrapper} style={!movie.image ? {background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center'} : {}}>
+        {movie.image ? (
+          <img alt="movie" className={classes.image} src={movie.image} />
+        ) : (
+          <Typography variant="h4" style={{color: '#fff', textTransform: 'capitalize'}}>{movie.title}</Typography>
+        )}
       </div>
       <div className={classes.details}>
         <Typography className={classes.title} variant="h4">

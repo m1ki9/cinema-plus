@@ -64,9 +64,7 @@ const MovieCard = props => {
         </div>
         <div
           className={classes.blurBackground}
-          style={{
-            backgroundImage: `url(${movie.image})`
-          }}
+          style={movie.image ? { backgroundImage: `url(${movie.image})` } : { background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
         />
       </Paper>
     </Link>

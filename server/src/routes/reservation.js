@@ -67,6 +67,7 @@ router.patch('/reservations/:id', auth.enhance, async (req, res) => {
     'username',
     'phone',
     'checkin',
+    'roomId',
   ];
   const isValidOperation = updates.every((update) => allowedUpdates.includes(update));
 

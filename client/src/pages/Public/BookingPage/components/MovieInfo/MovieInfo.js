@@ -60,9 +60,7 @@ export default function MovieInfo(props) {
       <div className={classes.movieInfos}>
         <div
           className={classes.background}
-          style={{
-            backgroundImage: `url(${movie.image})`
-          }}
+          style={movie.image ? { backgroundImage: `url(${movie.image})` } : { background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
         />
         <Typography className={classes.title}>{movie.title}</Typography>
         <div className={classes.info}>

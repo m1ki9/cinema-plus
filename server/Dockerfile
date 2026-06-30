@@ -16,8 +16,6 @@ WORKDIR /app
 COPY --from=deps --chown=cinemaapp:cinemagrp /app/node_modules ./node_modules
 COPY --chown=cinemaapp:cinemagrp . .
 
-RUN node patch.js && rm patch.js
-
 RUN mkdir -p /app/uploads && chown cinemaapp:cinemagrp /app/uploads
 
 VOLUME ["/app/uploads"]

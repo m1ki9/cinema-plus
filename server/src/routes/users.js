@@ -20,7 +20,9 @@ router.post('/users', async (req, res) => {
 });
 
 router.post('/users/photo/:id', upload('users').single('file'), async (req, res, next) => {
-  const url = `${req.protocol}://${req.get('host')}`;
+  const proto = req.headers['x-forwarded-proto'] || req.protocol;
+  const host = req.headers['x-forwarded-host'] || req.get('host');
+  const url = `${proto}://${host}`;
   const { file } = req;
   const userId = req.params.id;
   try {
@@ -36,7 +38,7 @@ router.post('/users/photo/:id', upload('users').single('file'), async (req, res,
     res.send({ user, file });
   } catch (e) {
     console.log(e);
-    res.sendStatus(400).send(e);
+    res.status(400).send(e);
   }
 });
 

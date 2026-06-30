@@ -12,7 +12,8 @@ export default theme => ({
     zIndex: 1,
     height: '100%',
     right: 0,
-    backgroundSize: 'cover',
+    backgroundSize: 'contain',
+    backgroundPosition: 'right center',
     backgroundRepeat: 'no-repeat',
     width: '100%'
   },

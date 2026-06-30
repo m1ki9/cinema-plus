@@ -7,6 +7,7 @@ import {
   getCinemasUserModeling,
   getCinema,
   getCinemas,
+  getRoom,
   getShowtimes,
   getReservations,
   getSuggestedReservationSeats,
@@ -56,12 +57,29 @@ class BookingPage extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const { selectedCinema, selectedDate, getCinema } = this.props;
-    if (
-      (selectedCinema && prevProps.selectedCinema !== selectedCinema) ||
-      (selectedCinema && prevProps.selectedDate !== selectedDate)
-    ) {
+    const {
+      selectedCinema,
+      selectedTime,
+      getCinema,
+      getRoom,
+      showtimes
+    } = this.props;
+
+    if (selectedCinema && prevProps.selectedCinema !== selectedCinema) {
       getCinema(selectedCinema);
+    }
+
+    // Load the room (and its seats) for the chosen cinema + time
+    if (
+      selectedCinema &&
+      selectedTime &&
+      (prevProps.selectedCinema !== selectedCinema ||
+        prevProps.selectedTime !== selectedTime)
+    ) {
+      const showtime = showtimes.find(
+        s => s.cinemaId === selectedCinema && s.startAt === selectedTime
+      );
+      if (showtime && showtime.roomId) getRoom(showtime.roomId);
     }
   }
 
@@ -87,8 +105,8 @@ class BookingPage extends Component {
   };
 
   onSelectSeat = (row, seat) => {
-    const { cinema, setSelectedSeats } = this.props;
-    const seats = [...cinema.seats];
+    const { room, setSelectedSeats } = this.props;
+    const seats = [...room.seats];
     const newSeats = [...seats];
     if (seats[row][seat] === 1) {
       newSeats[row][seat] = 1;
@@ -106,6 +124,7 @@ class BookingPage extends Component {
     const {
       movie,
       cinema,
+      room,
       selectedSeats,
       selectedDate,
       selectedTime,
@@ -125,10 +144,11 @@ class BookingPage extends Component {
       date: selectedDate,
       startAt: selectedTime,
       seats: this.bookSeats(),
-      ticketPrice: cinema.ticketPrice,
-      total: selectedSeats.length * cinema.ticketPrice,
+      ticketPrice: movie.ticketPrice,
+      total: selectedSeats.length * movie.ticketPrice,
       movieId: movie._id,
       cinemaId: cinema._id,
+      roomId: room._id,
       username: user.username,
       phone: user.phone
     });
@@ -141,8 +161,8 @@ class BookingPage extends Component {
   }
 
   bookSeats() {
-    const { cinema, selectedSeats } = this.props;
-    const seats = [...cinema.seats];
+    const { room, selectedSeats } = this.props;
+    const seats = [...room.seats];
 
     if (selectedSeats.length === 0) return;
 
@@ -187,16 +207,17 @@ class BookingPage extends Component {
   }
 
   onGetReservedSeats = () => {
-    const { reservations, cinema, selectedDate, selectedTime } = this.props;
+    const { reservations, room, selectedDate, selectedTime } = this.props;
 
-    if (!cinema) return [];
-    const newSeats = [...cinema.seats];
+    if (!room) return [];
+    const newSeats = room.seats.map(row => [...row]);
 
     const filteredReservations = reservations.filter(
       reservation =>
         new Date(reservation.date).toLocaleDateString() ===
           new Date(selectedDate).toLocaleDateString() &&
-        reservation.startAt === selectedTime
+        reservation.startAt === selectedTime &&
+        reservation.roomId === room._id
     );
     if (filteredReservations.length && selectedDate && selectedTime) {
       const reservedSeats = filteredReservations
@@ -349,6 +370,7 @@ class BookingPage extends Component {
       user,
       movie,
       cinema,
+      room,
       showtimes,
       selectedSeats,
       selectedCinema,
@@ -400,7 +422,7 @@ class BookingPage extends Component {
               />
             )}
 
-            {cinema && selectedCinema && selectedTime && !showInvitation && (
+            {room && selectedCinema && selectedTime && !showInvitation && (
               <>
                 <BookingSeats
                   seats={seats}
@@ -410,8 +432,8 @@ class BookingPage extends Component {
                 />
                 <BookingCheckout
                   user={user}
-                  ticketPrice={cinema.ticketPrice}
-                  seatsAvailable={cinema.seatsAvailable}
+                  ticketPrice={movie.ticketPrice}
+                  seatsAvailable={room.seatsAvailable}
                   selectedSeats={selectedSeats.length}
                   onBookSeats={() => this.checkout()}
                 />
@@ -442,6 +464,7 @@ const mapStateToProps = (
     authState,
     movieState,
     cinemaState,
+    roomState,
     showtimeState,
     reservationState,
     checkoutState
@@ -453,6 +476,7 @@ const mapStateToProps = (
   movie: movieState.selectedMovie,
   cinema: cinemaState.selectedCinema,
   cinemas: cinemaState.cinemas,
+  room: roomState.selectedRoom,
   showtimes: showtimeState.showtimes.filter(
     showtime => showtime.movieId === ownProps.match.params.id
   ),
@@ -472,6 +496,7 @@ const mapStateToProps = (
 const mapDispatchToProps = {
   getMovie,
   getCinema,
+  getRoom,
   getCinemasUserModeling,
   getCinemas,
   getShowtimes,

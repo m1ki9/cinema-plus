@@ -34,8 +34,9 @@ const MovieCardSimple = props => {
         <CardActionArea>
           <CardMedia
             className={classes.media}
-            image={movie.image}
+            image={movie.image || undefined}
             title={movie.title}
+            style={!movie.image ? { background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' } : {}}
           />
           <CardContent>
             <Typography

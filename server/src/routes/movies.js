@@ -17,12 +17,14 @@ router.post('/movies', auth.enhance, async (req, res) => {
   }
 });
 
-router.get(
+router.post(
   '/movies/photo/:id',
   auth.enhance,
   upload('movies').single('file'),
   async (req, res, next) => {
-    const url = `${req.protocol}://${req.get('host')}`;
+    const proto = req.headers['x-forwarded-proto'] || req.protocol;
+    const host = req.headers['x-forwarded-host'] || req.get('host');
+    const url = `${proto}://${host}`;
     const { file } = req;
     const movieId = req.params.id;
     try {
@@ -38,7 +40,7 @@ router.get(
       res.send({ movie, file });
     } catch (e) {
       console.log(e);
-      res.sendStatus(400).send(e);
+      res.status(400).send(e);
     }
   }
 );
@@ -73,6 +75,7 @@ router.put('/movies/:id', auth.enhance, async (req, res) => {
   const allowedUpdates = [
     'title',
     'image',
+    'status',
     'language',
     'genre',
     'director',
@@ -81,6 +84,7 @@ router.put('/movies/:id', auth.enhance, async (req, res) => {
     'duration',
     'releaseDate',
     'endDate',
+    'ticketPrice',
   ];
   const isValidOperation = updates.every((update) => allowedUpdates.includes(update));
 

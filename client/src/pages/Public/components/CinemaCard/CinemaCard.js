@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import { makeStyles } from '@material-ui/core';
 import { Typography } from '@material-ui/core';
 import { Paper } from '../../../../components';
-import { EventSeat, AttachMoney } from '@material-ui/icons';
+import { LocationOn } from '@material-ui/icons';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -59,16 +59,15 @@ const useStyles = makeStyles(theme => ({
 function CinemaCard(props) {
   const classes = useStyles(props);
   const { className, cinema } = props;
-  const cinemaImage =
-    cinema && cinema.image
-      ? cinema.image
-      : 'https://source.unsplash.com/featured/?cinema';
-
   const rootClassName = classNames(classes.root, className);
   return (
     <Paper className={rootClassName}>
-      <div className={classes.imageWrapper}>
-        <img alt="cinema" className={classes.image} src={cinemaImage} />
+      <div className={classes.imageWrapper} style={!(cinema && cinema.image) ? {background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center'} : {}}>
+        {cinema && cinema.image ? (
+          <img alt="cinema" className={classes.image} src={cinema.image} />
+        ) : (
+          <Typography variant="h4" style={{color: '#fff', textTransform: 'capitalize'}}>{cinema.name}</Typography>
+        )}
       </div>
       <div className={classes.details}>
         <Typography className={classes.name} variant="h4">
@@ -79,15 +78,9 @@ function CinemaCard(props) {
         </Typography>
       </div>
       <div className={classes.stats}>
-        <AttachMoney className={classes.eventIcon} />
+        <LocationOn className={classes.eventIcon} />
         <Typography className={classes.eventText} variant="body2">
-          {cinema.ticketPrice} <span>&euro;</span> per movie
-        </Typography>
-      </div>
-      <div className={classes.stats}>
-        <EventSeat className={classes.eventIcon} />
-        <Typography className={classes.eventText} variant="body2">
-          {cinema.seatsAvailable} seats Available
+          {cinema.city}
         </Typography>
       </div>
     </Paper>

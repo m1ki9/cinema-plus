@@ -5,16 +5,18 @@ import CustomizedSnackbar from '../CustomizedSnackbar/';
 
 const Alert = ({ alerts }) =>
   alerts.length > 0 &&
-  alerts.map((alert, index) => (
-    <CustomizedSnackbar
-      key={`custom-alert-${index}-${alert.id}`}
-      isOpen={true}
-      vertical="top"
-      horizontal="right"
-      variant={alert.alertType}
-      message={alert.msg}
-    />
-  ));
+  alerts
+    .filter(alert => alert.alertType !== 'error')
+    .map((alert, index) => (
+      <CustomizedSnackbar
+        key={`custom-alert-${index}-${alert.id}`}
+        isOpen={true}
+        vertical="top"
+        horizontal="right"
+        variant={alert.alertType}
+        message={alert.msg}
+      />
+    ));
 
 Alert.propTypes = {
   alerts: PropTypes.array.isRequired

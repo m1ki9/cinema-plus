@@ -11,7 +11,7 @@ import {
 import MomentUtils from '@date-io/moment';
 
 import styles from './styles';
-import { addShowtime, updateShowtime } from '../../../../../store/actions';
+import { addShowtime, updateShowtime, getRooms } from '../../../../../store/actions';
 
 class AddShowtime extends Component {
   state = {
@@ -19,70 +19,50 @@ class AddShowtime extends Component {
     startDate: null,
     endDate: null,
     movieId: '',
-    cinemaId: ''
+    cinemaId: '',
+    roomId: ''
   };
 
   componentDidMount() {
+    this.props.getRooms();
     if (this.props.selectedShowtime) {
       const {
         startAt,
         startDate,
         endDate,
         movieId,
-        cinemaId
+        cinemaId,
+        roomId
       } = this.props.selectedShowtime;
       this.setState({
         startAt,
         startDate,
         endDate,
         movieId,
-        cinemaId
+        cinemaId,
+        roomId: roomId || ''
       });
     }
   }
 
-  handleChange = e => {
-    this.setState({
-      state: e.target.value
-    });
-  };
-
   handleFieldChange = (field, value) => {
     const newState = { ...this.state };
     newState[field] = value;
+    // Reset room when cinema changes
+    if (field === 'cinemaId') newState.roomId = '';
     this.setState(newState);
   };
 
   onAddShowtime = () => {
-    const { startAt, startDate, endDate, movieId, cinemaId } = this.state;
-    const showtime = {
-      startAt,
-      startDate,
-      endDate,
-      movieId,
-      cinemaId
-    };
+    const { startAt, startDate, endDate, movieId, cinemaId, roomId } = this.state;
+    const showtime = { startAt, startDate, endDate, movieId, cinemaId, roomId };
     this.props.addShowtime(showtime);
   };
 
   onUpdateShowtime = () => {
-    const { startAt, startDate, endDate, movieId, cinemaId } = this.state;
-    const showtime = {
-      startAt,
-      startDate,
-      endDate,
-      movieId,
-      cinemaId
-    };
+    const { startAt, startDate, endDate, movieId, cinemaId, roomId } = this.state;
+    const showtime = { startAt, startDate, endDate, movieId, cinemaId, roomId };
     this.props.updateShowtime(showtime, this.props.selectedShowtime._id);
-  };
-
-  onFilterMinDate = () => {
-    const { nowShowing } = this.props;
-    const { movieId } = this.state;
-    const selectedMovie = nowShowing.find(movie => movie._id === movieId);
-    if (selectedMovie) return selectedMovie.startDate;
-    return new Date();
   };
 
   onFilterMaxDate = () => {
@@ -94,19 +74,21 @@ class AddShowtime extends Component {
   };
 
   render() {
-    const { nowShowing, cinemas, classes, className } = this.props;
-    const { startAt, startDate, endDate, movieId, cinemaId } = this.state;
+    const { nowShowing, cinemas, rooms, classes, className } = this.props;
+    const { startAt, startDate, endDate, movieId, cinemaId, roomId } = this.state;
 
     const rootClassName = classNames(classes.root, className);
-    const title = this.props.selectedShowtime
-      ? 'Edit Showtime'
-      : 'Add Showtime';
+    const title = this.props.selectedShowtime ? 'Edit Showtime' : 'Add Showtime';
     const submitButton = this.props.selectedShowtime
       ? 'Update Showtime'
       : 'Save Details';
     const submitAction = this.props.selectedShowtime
       ? () => this.onUpdateShowtime()
       : () => this.onAddShowtime();
+
+    const filteredRooms = (rooms || []).filter(
+      room => room.cinemaId === cinemaId
+    );
 
     return (
       <div className={rootClassName}>
@@ -128,13 +110,22 @@ class AddShowtime extends Component {
               onChange={event =>
                 this.handleFieldChange('startAt', event.target.value)
               }>
-              {['18:00', '19:00', '20:00', '21:00', ' 22:00', '23:00'].map(
-                time => (
-                  <MenuItem key={`time-${time}`} value={time}>
-                    {time}
-                  </MenuItem>
-                )
-              )}
+              {[
+                '14:00',
+                '15:00',
+                '16:00',
+                '17:00',
+                '18:00',
+                '19:00',
+                '20:00',
+                '21:00',
+                '22:00',
+                '23:00'
+              ].map(time => (
+                <MenuItem key={`time-${time}`} value={time}>
+                  {time}
+                </MenuItem>
+              ))}
             </TextField>
           </div>
           <div className={classes.field}>
@@ -172,6 +163,35 @@ class AddShowtime extends Component {
               {cinemas.map(cinema => (
                 <MenuItem key={cinema._id} value={cinema._id}>
                   {cinema.name}
+                </MenuItem>
+              ))}
+            </TextField>
+          </div>
+
+          <div className={classes.field}>
+            <TextField
+              fullWidth
+              select
+              className={classes.textField}
+              label="Room"
+              helperText={
+                !cinemaId
+                  ? 'Select a cinema first'
+                  : filteredRooms.length === 0
+                  ? 'No rooms for this cinema'
+                  : 'Select a room'
+              }
+              margin="dense"
+              required
+              disabled={!cinemaId}
+              value={roomId}
+              variant="outlined"
+              onChange={event =>
+                this.handleFieldChange('roomId', event.target.value)
+              }>
+              {filteredRooms.map(room => (
+                <MenuItem key={room._id} value={room._id}>
+                  {room.name} ({room.seatsAvailable} seats)
                 </MenuItem>
               ))}
             </TextField>
@@ -229,13 +249,14 @@ AddShowtime.propTypes = {
   classes: PropTypes.object.isRequired
 };
 
-const mapStateToProps = ({ movieState, cinemaState }) => ({
+const mapStateToProps = ({ movieState, cinemaState, roomState }) => ({
   movies: movieState.movies,
   nowShowing: movieState.nowShowing,
-  cinemas: cinemaState.cinemas
+  cinemas: cinemaState.cinemas,
+  rooms: roomState.rooms
 });
 
-const mapDispatchToProps = { addShowtime, updateShowtime };
+const mapDispatchToProps = { addShowtime, updateShowtime, getRooms };
 
 export default connect(
   mapStateToProps,

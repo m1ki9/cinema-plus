@@ -49,6 +49,7 @@ export const addShowtime = showtime => async dispatch => {
     });
     if (response.ok) {
       dispatch(setAlert('Showtime Created', 'success', 5000));
+      dispatch(getShowtimes());
       return { status: 'success', message: 'Showtime Created' };
     }
   } catch (error) {
@@ -73,8 +74,9 @@ export const updateShowtime = (showtime, id) => async dispatch => {
       body: JSON.stringify(showtime)
     });
     if (response.ok) {
-      dispatch(setAlert('Showtime Created', 'success', 5000));
-      return { status: 'success', message: 'Showtime Created' };
+      dispatch(setAlert('Showtime Updated', 'success', 5000));
+      dispatch(getShowtimes());
+      return { status: 'success', message: 'Showtime Updated' };
     }
   } catch (error) {
     dispatch(setAlert(error.message, 'error', 5000));
